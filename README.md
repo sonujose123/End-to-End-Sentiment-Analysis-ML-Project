@@ -100,6 +100,4 @@ Because roughly 92% of reviews are positive, accuracy alone can look strong even
 - Save the fitted vectorizer, scaler and model with `pickle` for reuse
 
 
-## Author
 
-**Sonu Jose**
