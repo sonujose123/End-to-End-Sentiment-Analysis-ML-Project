@@ -1,8 +1,10 @@
 # Amazon Alexa Review Sentiment Analysis
 
-Classifying Amazon Alexa product reviews as **positive** or **negative** using classical NLP preprocessing and a Random Forest classifier.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/19RU6pSilm5sFOhFYH5nBzAkNtCB1CeIR)
 
-The project covers the full workflow: exploratory data analysis, text cleaning, bag-of-words feature extraction, model training and evaluation.
+Classifying Amazon Alexa product reviews as **positive** or **negative** using classical NLP preprocessing and a Random Forest classifier, built in a Jupyter notebook on Google Colab.
+
+The notebook covers the full workflow: exploratory data analysis, text cleaning, bag-of-words feature extraction, model training and evaluation.
 
 ## Dataset
 
@@ -22,7 +24,7 @@ Key characteristics:
 - **Ratings skew high:** 2,286 of the reviews are 5 stars.
 - **One missing review** in `verified_reviews`, which is dropped.
 
-## Project Workflow
+## Notebook Workflow
 
 1. **Exploratory data analysis**
    - Null checks, review length, and rating and feedback distributions
@@ -44,45 +46,47 @@ Key characteristics:
 
 ## Tech Stack
 
-Python · pandas · NumPy · scikit-learn · NLTK · Matplotlib · Seaborn · WordCloud · XGBoost
+Python · Jupyter / Google Colab · pandas · NumPy · scikit-learn · NLTK · Matplotlib · Seaborn · WordCloud · XGBoost
 
-## Getting Started
+## How to Run
 
-### Prerequisites
+### Option 1: Google Colab (recommended)
 
-- Python 3.8+
+1. Click the **Open in Colab** badge at the top of this page.
+2. Upload `amazon_alexa.tsv` to the Colab session: open the **Files** panel on the left and use **Upload**, or run:
+   ```python
+   from google.colab import files
+   files.upload()
+   ```
+3. Run all cells (**Runtime → Run all**). The first cells install `wordcloud` and download the NLTK stopwords automatically.
 
-### Installation
+### Option 2: Local Jupyter Notebook
 
 ```bash
 git clone https://github.com/<your-username>/<your-repo>.git
 cd <your-repo>
 
-pip install numpy pandas matplotlib seaborn nltk scikit-learn xgboost wordcloud
+pip install numpy pandas matplotlib seaborn nltk scikit-learn xgboost wordcloud notebook
+jupyter notebook
 ```
 
-### Run
-
-Make sure `amazon_alexa.tsv` is in the same folder as the script, then:
-
-```bash
-python sentiment_analysis.py
-```
-
-> **Note:** The script was exported from a Google Colab notebook and contains the notebook command `!pip install wordcloud`. This line is not valid Python outside a notebook, so remove it (the package is installed above) or run the code in Google Colab / Jupyter instead.
+Open `Sentiment Analysis.ipynb`, make sure `amazon_alexa.tsv` is in the same folder, and run all cells.
 
 ## Repository Structure
 
 ```
 .
-├── amazon_alexa.tsv         # Dataset
-├── sentiment_analysis.py    # EDA, preprocessing, training, evaluation
+├── Sentiment Analysis.ipynb   # Main notebook (EDA, preprocessing, training, evaluation)
+├── sentiment_analysis.py      # Script export of the notebook (for reference)
+├── amazon_alexa.tsv           # Dataset
 └── README.md
 ```
 
+> `sentiment_analysis.py` is an auto-generated export of the Colab notebook. It still contains notebook-only commands such as `!pip install wordcloud`, so run the `.ipynb` rather than the `.py` file.
+
 ## Results
 
-Running the script prints training accuracy, test accuracy and a confusion matrix for the Random Forest model.
+The notebook prints training accuracy, test accuracy and a confusion matrix for the Random Forest model.
 
 Because roughly 92% of reviews are positive, accuracy alone can look strong even for a model that favours the majority class. Check the confusion matrix, and look at precision and recall for the negative class, when judging performance.
 
@@ -95,9 +99,6 @@ Because roughly 92% of reviews are positive, accuracy alone can look strong even
 - Try TF-IDF features or transformer-based embeddings
 - Save the fitted vectorizer, scaler and model with `pickle` for reuse
 
-## License
-
-Add a license of your choice (e.g. MIT) before publishing.
 
 ## Author
 
