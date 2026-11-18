@@ -12,15 +12,17 @@ if str(ROOT) not in sys.path:
 
 import streamlit as st
 
-from dashboard import tab_file, tab_model, tab_single
+from dashboard import tab_file, tab_live, tab_model, tab_single
 
 st.set_page_config(page_title='Review Sentiment', page_icon='🔊', layout='wide')
 st.title('Review Sentiment Dashboard')
 
-t1, t2, t3 = st.tabs(['Try a review', 'Analyze a file', 'Model performance'])
+t1, t2, t3, t4 = st.tabs(['Try a review', 'Analyze a file', 'Live feed', 'Model performance'])
 with t1:
     tab_single.render()
 with t2:
     tab_file.render()
 with t3:
+    tab_live.render()
+with t4:
     tab_model.render()
