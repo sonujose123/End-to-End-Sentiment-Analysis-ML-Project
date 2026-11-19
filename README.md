@@ -70,12 +70,13 @@ flowchart LR
 3. **Model:** a Random Forest (200 trees) with class weights, trained on a stratified 70/30 split.
 4. **Serve:** one `SentimentPredictor` class loads the saved model and is used by both the API and the dashboard, so they always give identical answers.
 
-### Example predictions
+### Example prediction
 
 | Review | Prediction | Confidence |
 |---|---|---|
-| Love my Echo, the sound is great! | positive | about 1.00 |
-| Very disappointed. It stopped working and does not understand me. | negative | about 0.65 |
+| It is not good, I would not recommend it. | negative | 0.585 |
+
+A confidence this close to 0.5 shows how uncertain the model is on negative reviews. See the results below.
 
 ## Results
 
@@ -85,26 +86,26 @@ Evaluated on a held-out test set of 945 reviews (77 negative, 868 positive):
 |---|---|
 | Accuracy | 91.6% |
 | Always-predict-positive baseline | 91.9% |
-| Negative recall (unhappy reviews found) | 59.7% (46 of 77) |
-| Negative precision (negative flags that are right) | 48.9% |
-| Negative F1 | 0.54 |
+| Negative recall (unhappy reviews found) | 40.3% (31 of 77) |
+| Negative precision (negative flags that are right) | 48.4% |
+| Negative F1 | 0.44 |
 
 Confusion matrix (rows = actual, columns = predicted):
 
 | | Predicted negative | Predicted positive |
 |---|---|---|
-| **Actual negative** | 46 | 31 |
-| **Actual positive** | 48 | 820 |
+| **Actual negative** | 31 | 46 |
+| **Actual positive** | 33 | 835 |
 
-**How to read this honestly:** about 92% of the reviews are positive, so a model that always says "positive" already scores 91.9%. Accuracy alone is misleading here. The useful question is how many negative reviews the model finds. It finds about 6 in 10, and roughly half of its negative flags are false alarms.
+**How to read this honestly:** about 92% of the reviews are positive, so a model that always says "positive" already scores 91.9%. The model's accuracy does not beat that baseline, so accuracy is the wrong measure here. The useful question is how many negative reviews it finds. It finds about 4 in 10, and about half of its negative flags are false alarms. This is the weak spot of the project, and the next improvement should target it.
 
 ## Key findings and design decisions
 
 | Decision or finding | Why it matters |
 |---|---|
 | **Judge the model on negative-class recall and F1, not accuracy** | A model that never reads a word scores 91.9% accuracy. |
-| **Class weights (`class_weight='balanced'`)** | A plain Random Forest scored higher accuracy (94.4%) but found only 34% of negative reviews. Class weights raised that to 60% at the cost of precision. The right choice depends on the cost of missing an unhappy customer versus a false alarm. |
-| **Keep negation words** | Standard stopword lists delete *not*, which flips a review's meaning. In reviews the model flags as negative, *not* is the most frequent word. |
+| **Tested class weights (`class_weight='balanced'`)** | A plain Random Forest reached 94.4% accuracy and found only 34% of negative reviews, with 93% precision (negative F1 0.50). Class weights raised recall to about 40% but cut precision to about 48%, and the negative F1 fell to 0.44. The class weights helped only a little, and that finding is why threshold tuning is the next step. |
+| **Keep negation words** | Standard stopword lists delete *not*, which flips a review's meaning. *not* is the most frequent word in negative reviews. |
 | **Stratified train/test split** | The negative class is only 8% of the data, so the split must keep that mix in both parts. |
 | **Fit the scaler on training data only** | Fitting it on all data would leak information from the test set into training. |
 | **One shared predictor class** | Training, API and dashboard use the same cleaning and model code, so their results cannot drift apart. |
@@ -213,7 +214,7 @@ Amazon Alexa product reviews: 3,150 verified reviews with a star rating, date, p
 
 ## Limitations and next steps
 
-- **Negative reviews are the weak spot** (F1 0.54). Options: tune the decision threshold, use TF-IDF with word pairs (so the model can see "not good"), tune hyperparameters, or fine-tune a transformer model.
+- **Negative reviews are the weak spot** (recall 40%, F1 0.44). Next experiments: tune the decision threshold (the model currently predicts negative only when the probability of positive is below 50%), use TF-IDF with word pairs (so the model can see "not good"), tune hyperparameters, or fine-tune a transformer model.
 - **A bag of words ignores word order**, so sarcasm and subtle phrasing are hard for it.
 - **Trained on Alexa reviews only.** It may not transfer well to other products or to other languages.
 - **The "Analyze a file" sample uses reviews the model was trained on**, so those numbers are optimistic. The held-out results above are the honest ones.
