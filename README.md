@@ -8,7 +8,7 @@
 
 A machine learning project that takes customer reviews of Amazon Alexa devices from a notebook experiment to a **deployed product**: a trained model, a **REST API (FastAPI)** and an **interactive dashboard (Streamlit)** with a live review feed.
 
-Live demo: 🔗  [[alexa-sentiment.streamlit.app](https://alexa-sentiment.streamlit.app)](https://end-to-end-sentiment-analysis-ml-project-vbajxzn7ghxzw6ejzgjxg.streamlit.app/)
+Live demo: 🔗  (https://end-to-end-sentiment-analysis-ml-project-vbajxzn7ghxzw6ejzgjxg.streamlit.app/)
 
 ![Dashboard overview](docs/screenshots/analyze-file.png)
 
