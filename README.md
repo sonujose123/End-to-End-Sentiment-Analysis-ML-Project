@@ -203,7 +203,7 @@ This measures the saved model on the held-out test set and writes `models/metric
 
 ## Dataset
 
-Amazon Alexa product reviews: 3,150 verified reviews with a star rating, date, product variation and review text. About 92% are positive and 8% are negative. Source: ADD-DATASET-SOURCE.
+Amazon Alexa product reviews: 3,150 verified reviews with a star rating, date, product variation and review text. About 92% are positive and 8% are negative. Source: Dataset is available in the data folder.
 
 ## What this project demonstrates
 
