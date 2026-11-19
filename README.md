@@ -1,103 +1,226 @@
-# Amazon Alexa Review Sentiment Analysis
+# Amazon Alexa Review Sentiment: End-to-End ML Project
 
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-1.6.1-orange)
+![FastAPI](https://img.shields.io/badge/API-FastAPI-009688)
+![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-FF4B4B)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/19RU6pSilm5sFOhFYH5nBzAkNtCB1CeIR)
 
-Classifying Amazon Alexa product reviews as **positive** or **negative** using classical NLP preprocessing and a Random Forest classifier, built in a Jupyter notebook on Google Colab.
+A machine learning project that takes customer reviews of Amazon Alexa devices from a notebook experiment to a **deployed product**: a trained model, a **REST API (FastAPI)** and an **interactive dashboard (Streamlit)** with a live review feed.
 
-The notebook covers the full workflow: exploratory data analysis, text cleaning, bag-of-words feature extraction, model training and evaluation.
+### 🔗 Live demo: [YOUR-LIVE-APP-URL](YOUR-LIVE-APP-URL)
 
-## Dataset
+![Dashboard overview](docs/screenshots/analyze-file.png)
 
-`amazon_alexa.tsv` contains **3,150 verified customer reviews** of Amazon Alexa devices.
+## What it does
 
-| Column | Description |
-|---|---|
-| `rating` | Star rating from 1 to 5 |
-| `date` | Date the review was posted |
-| `variation` | Product variant (16 in total, e.g. *Charcoal Fabric*, *Walnut Finish*) |
-| `verified_reviews` | Review text |
-| `feedback` | Sentiment label: `1` = positive, `0` = negative |
+- Classifies a review as **positive** or **negative**, with a confidence score.
+- Lets anyone explore a whole file of reviews through charts, search and CSV export.
+- Replays reviews as a **live feed**, scoring each one as it arrives.
+- Shows the model's **honest performance**, including its weak spots.
+- Exposes the same model through a **REST API** for other programs to use.
 
-Key characteristics:
+## Screenshots
 
-- **Imbalanced classes:** 2,893 positive (92%) vs. 257 negative (8%) reviews.
-- **Ratings skew high:** 2,286 of the reviews are 5 stars.
-- **One missing review** in `verified_reviews`, which is dropped.
+### Score a single review
 
-## Notebook Workflow
+Type or paste a review and see the sentiment, the probability of positive and the model's confidence.
 
-1. **Exploratory data analysis**
-   - Null checks, review length, and rating and feedback distributions
-   - Mean rating by product variation
-   - Word clouds for all reviews, plus words unique to positive and to negative reviews
-2. **Text preprocessing**
-   - Strip non-alphabetic characters and lowercase
-   - Remove English stopwords (NLTK)
-   - Stem words with the Porter stemmer
-3. **Feature extraction**
-   - Bag-of-words with `CountVectorizer` (top 2,500 features)
-   - Min-max scaling
-4. **Modelling**
-   - 70/30 train/test split (`random_state=15`)
-   - `RandomForestClassifier` trained on the scaled features
-5. **Evaluation**
-   - Training and test accuracy
-   - Confusion matrix
+![Try a review](docs/screenshots/try-a-review.png)
 
-## Tech Stack
+### Analyze a file of reviews
 
-Python · Jupyter / Google Colab · pandas · NumPy · scikit-learn · NLTK · Matplotlib · Seaborn · WordCloud · XGBoost
+Upload a CSV or TSV (or use the built-in sample) to get the sentiment split, sentiment by star rating, the share of negative reviews by product, a trend over time, the most common words in positive and negative reviews, a searchable table and a CSV download.
 
-## How to Run
+![Analyze a file](docs/screenshots/analyze-file.png)
 
-### Option 1: Google Colab (recommended)
+### Live feed
 
-1. Click the **Open in Colab** badge at the top of this page.
-2. Upload `amazon_alexa.tsv` to the Colab session: open the **Files** panel on the left and use **Upload**, or run:
-   ```python
-   from google.colab import files
-   files.upload()
-   ```
-3. Run all cells (**Runtime → Run all**). The first cells install `wordcloud` and download the NLTK stopwords automatically.
+Reviews arrive one at a time and are scored in real time, with running counts, a live chart of the percentage of negative reviews and a table of the latest reviews.
 
-### Option 2: Local Jupyter Notebook
+![Live feed](docs/screenshots/live-feed.png)
 
-```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
+### Model performance
 
-pip install numpy pandas matplotlib seaborn nltk scikit-learn xgboost wordcloud notebook
-jupyter notebook
+Accuracy, precision and recall for the negative class, a confusion matrix and the always-positive baseline, so the model is judged honestly.
+
+![Model performance](docs/screenshots/model-performance.png)
+
+### REST API
+
+Automatic interactive documentation for single and batch predictions.
+
+![API docs](docs/screenshots/api-docs.png)
+
+## How it works
+
+```mermaid
+flowchart LR
+    A[Amazon Alexa reviews] --> B[Clean text<br/>keep negations, stem]
+    B --> C[Bag of words<br/>2,500 features]
+    C --> D[Random Forest<br/>class-weighted]
+    D --> E[(Saved model files)]
+    E --> F[SentimentPredictor]
+    F --> G[FastAPI<br/>/predict]
+    F --> H[Streamlit dashboard]
 ```
 
-Open `Sentiment Analysis.ipynb`, make sure `amazon_alexa.tsv` is in the same folder, and run all cells.
+1. **Clean:** lowercase, remove punctuation and stopwords, and stem each word. Negation words such as *not* are kept.
+2. **Features:** a bag of words with the 2,500 most frequent words, scaled to a 0 to 1 range.
+3. **Model:** a Random Forest (200 trees) with class weights, trained on a stratified 70/30 split.
+4. **Serve:** one `SentimentPredictor` class loads the saved model and is used by both the API and the dashboard, so they always give identical answers.
 
-## Repository Structure
+### Example predictions
 
-```
-.
-├── Sentiment Analysis.ipynb   # Main notebook (EDA, preprocessing, training, evaluation)
-├── sentiment_analysis.py      # Script export of the notebook (for reference)
-├── amazon_alexa.tsv           # Dataset
-└── README.md
-```
-
-> `sentiment_analysis.py` is an auto-generated export of the Colab notebook. It still contains notebook-only commands such as `!pip install wordcloud`, so run the `.ipynb` rather than the `.py` file.
+| Review | Prediction | Confidence |
+|---|---|---|
+| Love my Echo, the sound is great! | positive | about 1.00 |
+| Very disappointed. It stopped working and does not understand me. | negative | about 0.65 |
 
 ## Results
 
-The notebook prints training accuracy, test accuracy and a confusion matrix for the Random Forest model.
+Evaluated on a held-out test set of 945 reviews (77 negative, 868 positive):
 
-Because roughly 92% of reviews are positive, accuracy alone can look strong even for a model that favours the majority class. Check the confusion matrix, and look at precision and recall for the negative class, when judging performance.
+| Metric | Value |
+|---|---|
+| Accuracy | 91.6% |
+| Always-predict-positive baseline | 91.9% |
+| Negative recall (unhappy reviews found) | 59.7% (46 of 77) |
+| Negative precision (negative flags that are right) | 48.9% |
+| Negative F1 | 0.54 |
 
-## Possible Improvements
+Confusion matrix (rows = actual, columns = predicted):
 
-- Handle class imbalance (class weights, SMOTE, or resampling)
-- Report precision, recall and F1, not just accuracy
-- Tune hyperparameters with `GridSearchCV` and `StratifiedKFold`
-- Compare against other models such as XGBoost and Decision Tree
-- Try TF-IDF features or transformer-based embeddings
-- Save the fitted vectorizer, scaler and model with `pickle` for reuse
+| | Predicted negative | Predicted positive |
+|---|---|---|
+| **Actual negative** | 46 | 31 |
+| **Actual positive** | 48 | 820 |
 
+**How to read this honestly:** about 92% of the reviews are positive, so a model that always says "positive" already scores 91.9%. Accuracy alone is misleading here. The useful question is how many negative reviews the model finds. It finds about 6 in 10, and roughly half of its negative flags are false alarms.
 
+## Key findings and design decisions
 
+| Decision or finding | Why it matters |
+|---|---|
+| **Judge the model on negative-class recall and F1, not accuracy** | A model that never reads a word scores 91.9% accuracy. |
+| **Class weights (`class_weight='balanced'`)** | A plain Random Forest scored higher accuracy (94.4%) but found only 34% of negative reviews. Class weights raised that to 60% at the cost of precision. The right choice depends on the cost of missing an unhappy customer versus a false alarm. |
+| **Keep negation words** | Standard stopword lists delete *not*, which flips a review's meaning. In reviews the model flags as negative, *not* is the most frequent word. |
+| **Stratified train/test split** | The negative class is only 8% of the data, so the split must keep that mix in both parts. |
+| **Fit the scaler on training data only** | Fitting it on all data would leak information from the test set into training. |
+| **One shared predictor class** | Training, API and dashboard use the same cleaning and model code, so their results cannot drift apart. |
+
+**A property of the data worth knowing:** the `feedback` label turns out to be a simple rule on the star rating (1 to 2 stars = negative, 3 to 5 stars = positive). Nobody judged the text, so the model is effectively learning to guess a star rating from the words. Lukewarm 3-star reviews count as positive, which makes the negative class harder to separate.
+
+## Tech stack
+
+Python 3.12 · pandas · NumPy · scikit-learn · NLTK · FastAPI · Uvicorn · Streamlit · Plotly · Git and GitHub · Streamlit Community Cloud
+
+## Quick start
+
+Requires Python 3.12.
+
+```bash
+git clone https://github.com/sonujose123/End-to-End-Sentiment-Analysis-ML-Project.git
+cd End-to-End-Sentiment-Analysis-ML-Project
+
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+The trained model files are included in `models/`. The first run downloads NLTK's stopword list automatically.
+
+### Run the dashboard
+
+```bash
+streamlit run dashboard/app.py
+```
+
+### Run the API
+
+```bash
+uvicorn api.main:app --reload
+```
+
+Open http://127.0.0.1:8000/docs for the interactive documentation, or call it directly:
+
+```bash
+curl -X POST http://127.0.0.1:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Love my Echo, the sound is great!"}'
+```
+
+```json
+{
+  "text": "Love my Echo, the sound is great!",
+  "sentiment": "positive",
+  "confidence": 1.0,
+  "probability_positive": 1.0
+}
+```
+
+| Endpoint | Description |
+|---|---|
+| `GET /health` | Check that the service is running |
+| `POST /predict` | Score one review (`{"text": "..."}`) |
+| `POST /predict/batch` | Score up to 500 reviews (`{"texts": [...]}`) |
+
+Requests with empty text, or text longer than 5,000 characters, are rejected with a 422 error.
+
+### Re-run the evaluation
+
+```bash
+python -m src.evaluate
+```
+
+This measures the saved model on the held-out test set and writes `models/metrics.json`, which the dashboard's Model performance tab reads.
+
+## Project structure
+
+```
+.
+├── api/
+│   └── main.py              # FastAPI service
+├── dashboard/
+│   ├── app.py               # Streamlit entry point
+│   ├── common.py            # Shared loaders and colors
+│   └── tab_*.py             # One file per dashboard tab
+├── src/
+│   ├── config.py            # Paths and settings
+│   ├── preprocess.py        # Text cleaning
+│   ├── predict.py           # SentimentPredictor class
+│   ├── evaluate.py          # Test-set evaluation
+│   ├── analysis.py          # Helpers for dashboard charts
+│   └── sources.py           # Review sources for the live feed
+├── models/                  # Saved vectorizer, scaler, model and metrics
+├── data/amazon_alexa.tsv    # Dataset
+├── notebooks/               # Exploration and model training (Colab)
+├── docs/screenshots/        # Images used in this README
+├── requirements.txt
+└── README.md
+```
+
+## Dataset
+
+Amazon Alexa product reviews: 3,150 verified reviews with a star rating, date, product variation and review text. About 92% are positive and 8% are negative. Source: ADD-DATASET-SOURCE.
+
+## What this project demonstrates
+
+- **End-to-end ownership:** data exploration, preprocessing, modelling, evaluation, an API, a dashboard and a public deployment.
+- **Honest evaluation:** a baseline comparison, class-imbalance handling, and metrics chosen to match the real goal.
+- **Clean engineering:** modular code, one shared predictor, pinned dependencies and input validation.
+- **Product thinking:** a live feed, file upload, search and export, designed around how someone would actually use the model.
+
+## Limitations and next steps
+
+- **Negative reviews are the weak spot** (F1 0.54). Options: tune the decision threshold, use TF-IDF with word pairs (so the model can see "not good"), tune hyperparameters, or fine-tune a transformer model.
+- **A bag of words ignores word order**, so sarcasm and subtle phrasing are hard for it.
+- **Trained on Alexa reviews only.** It may not transfer well to other products or to other languages.
+- **The "Analyze a file" sample uses reviews the model was trained on**, so those numbers are optimistic. The held-out results above are the honest ones.
+- **The live feed is simulated** by replaying the sample dataset. `src/sources.py` is designed so a real review source can be plugged in. Amazon and Flipkart restrict scraping in their terms of service, so use official APIs or datasets you have permission to use.
+- **The vectorizer was fitted on all reviews before the split.** No labels were involved, so the effect is small, but a scikit-learn `Pipeline` would remove it.
+- The free hosting tier puts idle apps to sleep, so the first visit after a pause can take about 30 seconds.
+
+## Author
+
+**Sonu Jose** · [GitHub](https://github.com/sonujose123)
